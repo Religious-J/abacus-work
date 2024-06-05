@@ -1,11 +1,9 @@
 #include "hsolver_pw.h"
 
-#include <algorithm>
-
 #include "diago_bpcg.h"
 #include "diago_cg.h"
-#include "diago_david.h"
 #include "diago_dav_subspace.h"
+#include "diago_david.h"
 #include "module_base/global_variable.h"
 #include "module_base/parallel_global.h" // for MPI
 #include "module_base/timer.h"
@@ -16,6 +14,8 @@
 #include "module_hamilt_pw/hamilt_pwdft/wavefunc.h"
 #include "module_hsolver/diagh.h"
 #include "module_hsolver/diago_iter_assist.h"
+
+#include <algorithm>
 #ifdef USE_PAW
 #include "module_cell/module_paw/paw_cell.h"
 #endif
@@ -84,7 +84,7 @@ void HSolverPW<T, Device>::initDiagh(const psi::Psi<T, Device>& psi)
     }
     else if (this->method == "dav")
     {
-#ifdef __MPI 
+#ifdef __MPI
         const diag_comm_info comm_info = {POOL_WORLD, GlobalV::RANK_IN_POOL, GlobalV::NPROC_IN_POOL};
 #else
         const diag_comm_info comm_info = {GlobalV::RANK_IN_POOL, GlobalV::NPROC_IN_POOL};
@@ -96,24 +96,18 @@ void HSolverPW<T, Device>::initDiagh(const psi::Psi<T, Device>& psi)
             {
                 delete (DiagoDavid<T, Device>*)this->pdiagh;
 
-                this->pdiagh = new DiagoDavid<T, Device>(
-                                precondition.data(),
-                                GlobalV::PW_DIAG_NDIM,
-                                GlobalV::use_paw,
-                                comm_info
-                                );
+                this->pdiagh = new DiagoDavid<T, Device>(precondition.data(),
+                                                         GlobalV::PW_DIAG_NDIM,
+                                                         GlobalV::use_paw,
+                                                         comm_info);
 
                 this->pdiagh->method = this->method;
             }
         }
         else
         {
-            this->pdiagh = new DiagoDavid<T, Device>(
-                                precondition.data(),
-                                GlobalV::PW_DIAG_NDIM,
-                                GlobalV::use_paw,
-                                comm_info
-                                );
+            this->pdiagh
+                = new DiagoDavid<T, Device>(precondition.data(), GlobalV::PW_DIAG_NDIM, GlobalV::use_paw, comm_info);
 
             this->pdiagh->method = this->method;
         }
@@ -202,7 +196,7 @@ void HSolverPW<T, Device>::solve(hamilt::Hamilt<T, Device>* pHamilt,
                             is_occupied[i * psi.get_nbands() + j] = false;
                         }
                     }
-                }    
+                }
             }
         }
     }
@@ -223,7 +217,7 @@ void HSolverPW<T, Device>::solve(hamilt::Hamilt<T, Device>* pHamilt,
                 _gk[ig] = this->wfc_basis->getgpluskcar(ik, ig);
             }
 
-            std::vector<double> kpt(3,0);
+            std::vector<double> kpt(3, 0);
             kpt[0] = this->wfc_basis->kvec_c[ik].x;
             kpt[1] = this->wfc_basis->kvec_c[ik].y;
             kpt[2] = this->wfc_basis->kvec_c[ik].z;
@@ -323,7 +317,7 @@ void HSolverPW<T, Device>::solve(hamilt::Hamilt<T, Device>* pHamilt,
                 _gk[ig] = this->wfc_basis->getgpluskcar(ik, ig);
             }
 
-            std::vector<double> kpt(3,0);
+            std::vector<double> kpt(3, 0);
             kpt[0] = this->wfc_basis->kvec_c[ik].x;
             kpt[1] = this->wfc_basis->kvec_c[ik].y;
             kpt[2] = this->wfc_basis->kvec_c[ik].z;
@@ -442,7 +436,7 @@ void HSolverPW<T, Device>::solve(hamilt::Hamilt<T, Device>* pHamilt, // ESolver_
                 _gk[ig] = this->wfc_basis->getgpluskcar(ik, ig);
             }
 
-            std::vector<double> kpt(3,0);
+            std::vector<double> kpt(3, 0);
             kpt[0] = this->wfc_basis->kvec_c[ik].x;
             kpt[1] = this->wfc_basis->kvec_c[ik].y;
             kpt[2] = this->wfc_basis->kvec_c[ik].z;
@@ -546,7 +540,7 @@ void HSolverPW<T, Device>::solve(hamilt::Hamilt<T, Device>* pHamilt, // ESolver_
                 _gk[ig] = this->wfc_basis->getgpluskcar(ik, ig);
             }
 
-            std::vector<double> kpt(3,0);
+            std::vector<double> kpt(3, 0);
             kpt[0] = this->wfc_basis->kvec_c[ik].x;
             kpt[1] = this->wfc_basis->kvec_c[ik].y;
             kpt[2] = this->wfc_basis->kvec_c[ik].z;

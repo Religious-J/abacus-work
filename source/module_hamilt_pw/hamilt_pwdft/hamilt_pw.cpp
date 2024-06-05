@@ -198,6 +198,10 @@ HamiltPW<T, Device>::HamiltPW(const HamiltPW<T_in, Device_in> *hamilt)
 // the results in spsi.
 // Requires the products of psi with all beta functions in array
 // becp(nkb,m) (maybe calculated in hPsi).
+
+// 此例程将 S 矩阵应用于 m 个波函数 psi，并将结果放入 spsi 中。
+// 需要 psi 与数组 becp(nkb,m) 中所有 beta 函数的乘积（可能在 hPsi 中计算）。
+
 template <typename T, typename Device>
 void HamiltPW<T, Device>::sPsi(const T* psi_in, // psi
                                T* spsi,         // spsi
@@ -210,7 +214,8 @@ void HamiltPW<T, Device>::sPsi(const T* psi_in, // psi
 
     const T one{1, 0};
     const T zero{0, 0};
-
+  
+  // 如果全局变量GlobalV::use_paw为真，直接调用paw_nl_psi函数处理每个波段的波函数。
     if(GlobalV::use_paw)
     {
 #ifdef USE_PAW
@@ -223,7 +228,20 @@ void HamiltPW<T, Device>::sPsi(const T* psi_in, // psi
         return;
     }
 
+  // 如果不是PAW情况，使用syncmem_op将输入波函数复制到spsi
     syncmem_op()(this->ctx, this->ctx, spsi, psi_in, static_cast<size_t>(nbands * nrow));
+
+  // 如果全局变量GlobalV::use_uspp为真，进行一系列复杂的计算，包括内存分配、矩阵乘法和内存释放。
+  /*
+    - 为中间产品（becp、ps和qqc）保留内存。
+    - 执行矩阵-向量乘法（gemv_op()）或矩阵-矩阵乘法（gemm_op()）来计算波函数（psi_in）与beta函数的点积，并将它们存储在becp中。
+    - 在所有MPI处理器上减少beta函数-波函数乘积，确保所有处理器都有完整的集合。
+    - 将ps矩阵初始化为零。
+    - 使用qqc执行矩阵-矩阵乘法（与赝势相关的有效核势）。
+    - 如果处理非共线计算，则打印消息并退出。
+    - 计算最终的S矩阵应用于ps并将结果累加到spsi中。
+    - 释放为中间产品保留的内存。
+  */
     if (GlobalV::use_uspp)
     {
         T* becp = nullptr;
@@ -338,7 +356,7 @@ void HamiltPW<T, Device>::sPsi(const T* psi_in, // psi
                           ps,
                           inc,
                           &one,
-                          spsi,
+                          spsi,   // 
                           inc);
             }
             else
@@ -355,7 +373,7 @@ void HamiltPW<T, Device>::sPsi(const T* psi_in, // psi
                           ps,
                           this->ppcell->nkb,
                           &one,
-                          spsi,
+                          spsi,   // 
                           nrow);
             }
         }

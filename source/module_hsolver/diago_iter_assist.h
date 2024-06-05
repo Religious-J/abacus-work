@@ -14,13 +14,13 @@ class DiagoIterAssist
 {
   private:
     using Real = typename GetTypeReal<T>::type;
+
   public:
     static Real PW_DIAG_THR;
     static int PW_DIAG_NMAX;
 
     static Real LCAO_DIAG_THR;
     static int LCAO_DIAG_NMAX;
-
 
     /// average steps of last cg diagonalization for each band.
     static Real avg_iter;
@@ -29,12 +29,11 @@ class DiagoIterAssist
     static int SCF_ITER;
 
     // for CG diagonalization only
-    static void diagH_subspace(
-        hamilt::Hamilt<T, Device>* pHamilt,
-        const psi::Psi<T, Device> &psi,
-        psi::Psi<T, Device> &evc,
-        Real *en,
-        int n_band = 0);
+    static void diagH_subspace(hamilt::Hamilt<T, Device>* pHamilt,
+                               const psi::Psi<T, Device>& psi,
+                               psi::Psi<T, Device>& evc,
+                               Real* en,
+                               int n_band = 0);
     /// @brief use LAPACK to diagonalize the Hamiltonian matrix
     /// @param pHamilt interface to hamiltonian
     /// @param psi wavefunction to diagonalize
@@ -42,28 +41,27 @@ class DiagoIterAssist
     /// @param psi_nc number of columns (nbasis)
     /// @param evc new wavefunction
     /// @param en eigenenergies
-    /// @note exception handle: if there is no operator initialized in Hamilt, will directly copy value from psi to evc, and return all-zero eigenenergies.
-    static void diagH_subspace_init(
-        hamilt::Hamilt<T, Device>* pHamilt,
-        const T* psi,
-        int psi_nr,
-        int psi_nc,
-        psi::Psi<T, Device> &evc,
-        Real *en);
+    /// @note exception handle: if there is no operator initialized in Hamilt, will directly copy value from psi to evc,
+    /// and return all-zero eigenenergies.
+    static void diagH_subspace_init(hamilt::Hamilt<T, Device>* pHamilt,
+                                    const T* psi,
+                                    int psi_nr,
+                                    int psi_nc,
+                                    psi::Psi<T, Device>& evc,
+                                    Real* en);
 
-    static void diagH_LAPACK(
-        const int nstart,
-        const int nbands,
-        const T* hcc,
-        const T* sc,
-        const int ldh, // nstart
-        Real *e,
-        T* vcc);
+    static void diagH_LAPACK(const int nstart,
+                             const int nbands,
+                             const T* hcc,
+                             const T* sc,
+                             const int ldh, // nstart
+                             Real* e,
+                             T* vcc);
 
-    static bool test_exit_cond(const int &ntry, const int &notconv);
+    static bool test_exit_cond(const int& ntry, const int& notconv);
 
   private:
-    constexpr static const Device * ctx = {};
+    constexpr static const Device* ctx = {};
 
     using hpsi_info = typename hamilt::Operator<T, Device>::hpsi_info;
 
@@ -87,31 +85,31 @@ class DiagoIterAssist
     static T zero;
 };
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 typename DiagoIterAssist<T, Device>::Real DiagoIterAssist<T, Device>::avg_iter = 0.0;
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 int DiagoIterAssist<T, Device>::PW_DIAG_NMAX = 30;
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 typename DiagoIterAssist<T, Device>::Real DiagoIterAssist<T, Device>::PW_DIAG_THR = 1.0e-2;
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 int DiagoIterAssist<T, Device>::LCAO_DIAG_NMAX = 50;
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 typename DiagoIterAssist<T, Device>::Real DiagoIterAssist<T, Device>::LCAO_DIAG_THR = 1.0e-12;
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 bool DiagoIterAssist<T, Device>::need_subspace = false;
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 int DiagoIterAssist<T, Device>::SCF_ITER = 0;
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 T DiagoIterAssist<T, Device>::one = static_cast<T>(1.0);
 
-template<typename T, typename Device>
+template <typename T, typename Device>
 T DiagoIterAssist<T, Device>::zero = static_cast<T>(0.0);
 } // namespace hsolver
 

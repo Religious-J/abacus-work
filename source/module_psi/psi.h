@@ -12,21 +12,6 @@ namespace psi
 
 // structure for getting range of Psi
 // two display method: k index first or bands index first
-
-/*
-struct Range {
-    bool k_first;     // 显示方法：false = Psi(nbands, nks, nbasis); true = Psi(nks, nbands, nbasis)
-    size_t index_1;   // 如果 >=0，为目标第一个索引；如果 <0，不使用
-    size_t range_1;   // 如果 index_1 >= 0，range_1 是固定 index_1 的第二个索引的起点；否则，它是第一个索引的起点
-    size_t range_2;   // 如果 index_1 >= 0，range_2 是固定 index_1 的第二个索引的终点；否则，它是第一个索引的终点
-
-    // 简单构造函数
-    Range(const size_t range_in);
-    // 详细构造函数
-    Range(const bool k_first_in, const size_t index_1_in, const size_t range_1_in, const size_t range_2_in);
-};
-*/
-
 struct Range
 {
     /// k_first = 0: Psi(nbands, nks, nbasis) ; 1: Psi(nks, nbands, nbasis)
@@ -66,15 +51,9 @@ class Psi
     Psi(const Psi& psi_in);
     // Constructor 7: initialize a new psi from the given psi_in with a different class template
     // in this case, psi_in may have a different device type.
-    template <typename T_in, typename Device_in = Device>
-    Psi(const Psi<T_in, Device_in>& psi_in);
+    template <typename T_in, typename Device_in = Device> Psi(const Psi<T_in, Device_in>& psi_in);
     // Constructor 8: a pointer version of constructor 3
-    Psi(T* psi_pointer,
-        const int nk_in,
-        const int nbd_in,
-        const int nbs_in,
-        const int* ngk_in = nullptr,
-        const bool k_first_in = true);
+    Psi(T* psi_pointer, const int nk_in, const int nbd_in, const int nbs_in, const int* ngk_in = nullptr, const bool k_first_in = true);
     // Destructor for deleting the psi array manually
     ~Psi();
 
@@ -99,9 +78,10 @@ class Psi
     /// if k_first=true: choose band index, then Psi(ibasis) can reach Psi(ik, iband, ibasis)
     /// if k_first=false: choose band index, then Psi(ik, ibasis) can reach Psi(iband, ik, ibasis)
     void fix_b(const int ib) const;
-    /// choose k-point index and band index, then Psi(ibasis) can reach
+    /// choose k-point index and band index, then Psi(ibasis) can reach 
     /// Psi(ik, iband, ibasis) for k_first=true or Psi(iband, ik, ibasis) for k_first=false
     void fix_kb(const int ik, const int ib) const;
+
 
     /// use operator "(ikb1, ikb2, ibasis)" to reach target element
     /// if k_first=true, ikb=ik, ikb2=iband
@@ -134,7 +114,6 @@ class Psi
     // mark
     void zero_out();
 
-    // 求解范围：返回（开始指针、带数或 k 点）
     // solve Range: return(pointer of begin, number of bands or k-points)
     std::tuple<const T*, int> to_range(const Range& range) const;
     int npol = 1;
@@ -143,15 +122,15 @@ class Psi
     T* psi = nullptr; // avoid using C++ STL
 
     base_device::AbacusDevice_t device = {}; // track the device type (CPU, GPU and SYCL are supported currented)
-    Device* ctx = {};                        // an context identifier for obtaining the device variable
+    Device* ctx = {}; // an context identifier for obtaining the device variable
 
     // dimensions
-    int nk = 1;     // number of k points
+    int nk = 1; // number of k points
     int nbands = 1; // number of bands
     int nbasis = 1; // number of basis
 
-    mutable int current_k = 0;      // current k point
-    mutable int current_b = 0;      // current band index
+    mutable int current_k = 0; // current k point
+    mutable int current_b = 0; // current band index
     mutable int current_nbasis = 1; // current number of basis of current_k
 
     // current pointer for getting the psi
@@ -163,7 +142,7 @@ class Psi
 
     bool k_first = true;
 
-    bool allocate_inside = true; ///< whether allocate psi inside Psi class
+    bool allocate_inside = true;  ///<whether allocate psi inside Psi class
 
     using set_memory_op = base_device::memory::set_memory_op<T, Device>;
     using delete_memory_op = base_device::memory::delete_memory_op<T, Device>;
